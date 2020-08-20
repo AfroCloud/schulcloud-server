@@ -66,10 +66,17 @@ exports.hasRole = (context, userId, roleName) => {
 
 /**
  * @param  {string, array[string]} inputPermissions
+ * @param {string} operator OR|AND|XOR|NOT
  * @returns resolves if the current user has ANY of the given permissions
  */
-const hasPermission = (inputPermissions) => {
+const hasPermission = (inputPermissions, operator = 'OR') => {
 	const permissionNames = typeof inputPermissions === 'string' ? [inputPermissions] : inputPermissions;
+
+	operator = operator.toUpperCase();
+	const operators = ['OR', 'AND', 'NOT'];
+	if (!operators.includes(operator)) {
+		throw new Forbidden(`Permission Operator mismatch: ${operator}.`);
+	}
 
 	return (context) => {
 		const {
@@ -90,8 +97,14 @@ const hasPermission = (inputPermissions) => {
 			.service('users')
 			.get(account.userId)
 			.then(({ permissions = [] }) => {
-				const hasAnyPermission = permissionNames.some((perm) => permissions.includes(perm));
-				if (!hasAnyPermission) {
+				const userHasPermission = (permission) => permissions.includes(permission);
+				const hasAnyPermission = permissionNames.some(userHasPermission);
+				const hasAllPermissions = permissionNames.every(userHasPermission);
+				if (
+					(operator === 'OR' && !hasAnyPermission) ||
+					(operator === 'AND' && !hasAllPermissions) ||
+					(operator === 'NOT' && hasAnyPermission)
+				) {
 					throw new Forbidden(`You don't have one of the permissions: ${permissionNames.join(', ')}.`);
 				}
 				return Promise.resolve(context);

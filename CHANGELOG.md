@@ -15,6 +15,8 @@ Allowed Types of change: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `
 
 ### Added - Unreleased
 
+- SC-6239 - adding lern-store permission
+
 ### Removed
 
 - SC-6784 - Removed duplicated birth date formatting code in adminUsers service, which was causing an "Invalid date" output

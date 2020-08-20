@@ -36,6 +36,7 @@ const {
 	decorateAvatar,
 	decorateUsers,
 	handleClassId,
+	handleFederalStateRoles,
 	pushRemoveEvent,
 	enforceRoleHierarchyOnDelete,
 	enforceRoleHierarchyOnCreate,
@@ -119,6 +120,7 @@ const userHooks = {
 			generateRegistrationLink,
 			sendRegistrationLink,
 			resolveToIds('/roles', 'data.roles', 'name'),
+			handleFederalStateRoles,
 		],
 		update: [
 			iff(isProvider('external'), disallow()),

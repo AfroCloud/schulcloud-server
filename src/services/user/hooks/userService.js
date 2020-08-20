@@ -379,6 +379,97 @@ const handleClassId = (hook) => {
 		.then((res) => Promise.resolve(hook));
 };
 
+const getFederalStateRoleId = async (app, federalStateRole) => {
+	let roles;
+	try {
+		 roles = await app.service('roles').find({
+			query: {
+				name: federalStateRole,
+			},
+		});
+		return (roles.data || []).map((role) => role._id)[0];
+	} catch (e) {
+		logger.error(e);
+		throw new GeneralError(`Could not find role ${federalStateRole}`)
+	}
+};
+
+const isStudent = async (app, roles) => {
+	if (roles.length === 0) {
+		return false;
+	}
+	try {
+		const studentRole = await app.service('roles').find({
+			query: {
+				_id: { $in: roles },
+				name: 'student',
+			},
+		});
+		return studentRole.data.length > 0;
+	} catch (e) {
+		logger.error(e);
+	}
+
+	return false;
+};
+
+const isSchoolInState = async (app, schoolId, federalState) => {
+	try {
+		const federalStates = await app.service('federalStates').find({
+			query: {
+				abbreviation: federalState,
+			},
+		});
+		const federalStateId = (federalStates.data || []).map((state) => state._id);
+
+		const school = await app.service('schools').find({
+			query: {
+				_id: schoolId,
+				federalState: federalStateId,
+			},
+		});
+
+		return school.data.length > 0;
+	} catch (e) {
+		logger.error(e);
+	}
+
+	return false;
+};
+
+/**
+ * students in some federal states get an additional role,
+ * for special permissions like LERNSTORE_HIDE
+ */
+const handleFederalStateRoles = async (hook) => {
+	const federalStates = ['SH', 'HI'];
+	if (!hook.data.roles) {
+		return hook;
+	}
+	try {
+		const checkStudent = await isStudent(hook.app, hook.data.roles);
+
+		if (!checkStudent) {
+			return hook;
+		}
+
+		for (const federalState of federalStates) {
+			const federalStateRole = `student${federalState}`;
+			const checkSchool = await isSchoolInState(hook.app, hook.data.schoolId, federalState);
+			if (!checkSchool) {
+				continue;
+			}
+			const roleId = await getFederalStateRoleId(hook.app, federalStateRole);
+
+			hook.data.roles = [...hook.data.roles, roleId];
+		}
+	} catch (e) {
+		logger.error(e);
+	}
+
+	return hook;
+};
+
 const pushRemoveEvent = (hook) => {
 	hook.app.emit('users:after:remove', hook);
 	return hook;
@@ -619,6 +710,7 @@ module.exports = {
 	decorateAvatar,
 	decorateUsers,
 	handleClassId,
+	handleFederalStateRoles,
 	pushRemoveEvent,
 	enforceRoleHierarchyOnDelete,
 	enforceRoleHierarchyOnCreate,

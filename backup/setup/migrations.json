@@ -773,5 +773,27 @@
 		"$date": "2020-08-24T10:57:52.663Z"
 	},
 	"__v": 0
+},
+{
+	"_id": {
+		"$oid": "5f623318b8f16532e2f7a9f7"
+	},
+	"state": "up",
+	"name": "lernstore_permission_SH",
+	"createdAt": {
+		"$date": "2020-09-09T17:51:59.062Z"
+	},
+	"__v": 0
+},
+{
+	"_id": {
+		"$oid": "5f623318b8f16532e2f7a9f8"
+	},
+	"state": "up",
+	"name": "lernstore_permission_NI",
+	"createdAt": {
+		"$date": "2020-09-15T14:14:45.611Z"
+	},
+	"__v": 0
 }]
 
