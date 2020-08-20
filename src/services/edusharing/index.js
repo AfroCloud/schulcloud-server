@@ -1,5 +1,5 @@
 const hooks = require('./hooks');
-const EduSharingConnector = require('./logic/connector');
+const EduSharingConnector = require('./services/EduSharingConnector');
 
 class EduSearch {
 	find(data) {
